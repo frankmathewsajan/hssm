@@ -1,0 +1,47 @@
+services:
+  # 1. DATABASE (PostgreSQL)
+  db:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: hss_admin
+      POSTGRES_PASSWORD: stark_secure_password
+      POSTGRES_DB: hss_database
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  # 2. BACKEND (Django + uv)
+  backend:
+    build: 
+      context: ./backend
+    # We use '0.0.0.0' so the container can accept outside traffic
+    command: uv run manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgres://hss_admin:stark_secure_password@db:5432/hss_database
+      - DEBUG=True
+
+  # 3. FRONTEND (Next.js + pnpm)
+  frontend:
+    build:
+      context: ./frontend
+    command: pnpm run dev
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules # Important: Don't let WSL sync node_modules
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000/api
+
+volumes:
+  pgdata:
