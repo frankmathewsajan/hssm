@@ -1,3 +1,6 @@
 [submodule "backend"]
 	path = backend
 	url = https://github.com/frankmathewsajan/hssmanager
+[submodule "frontend"]
+	path = frontend
+	url = https://github.com/frankmathewsajan/hssm
