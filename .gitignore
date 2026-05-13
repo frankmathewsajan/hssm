@@ -1,2 +1,4 @@
 legacy
 .venv/
+inspect_csv.py
+csv_summary.txt
