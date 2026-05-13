@@ -1,23 +1,17 @@
-# Use the latest LTS Node image
 FROM node:20-slim
+RUN npm install -g pnpm@10.31.0
 
-# Install pnpm globally
-RUN npm install -g pnpm
-
-# Set working directory
 WORKDIR /app
 
-# Copy package files
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+
 COPY package.json pnpm-lock.yaml* ./
 
-# Install dependencies
-RUN pnpm install
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+    pnpm install --frozen-lockfile
 
-# Copy the rest of the code
 COPY . .
 
-# Next.js default port
 EXPOSE 3000
-
-# Run Next.js in dev mode
-CMD ["pnpm", "run", "dev"]
+CMD ["pnpm", "dev", "-H", "0.0.0.0"]

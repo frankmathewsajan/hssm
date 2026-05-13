@@ -1,5 +1,4 @@
 services:
-  # 1. DATABASE (PostgreSQL)
   db:
     image: postgres:16-alpine
     restart: always
@@ -9,39 +8,60 @@ services:
       POSTGRES_DB: hss_database
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hss_admin -d hss_database"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     volumes:
       - pgdata:/var/lib/postgresql/data
 
-  # 2. BACKEND (Django + uv)
   backend:
-    build: 
-      context: ./backend
-    # We use '0.0.0.0' so the container can accept outside traffic
+    build: ./backend
     command: uv run manage.py runserver 0.0.0.0:8000
-    volumes:
-      - ./backend:/app
+    # REMOVED: volumes: ./backend:/app
     ports:
       - "8000:8000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       - DATABASE_URL=postgres://hss_admin:stark_secure_password@db:5432/hss_database
       - DEBUG=True
+      - UV_LINK_MODE=copy
+    develop:
+      watch:
+        - action: sync
+          path: ./backend
+          target: /app
+          ignore:
+            - .venv/
+            - __pycache__/
 
-  # 3. FRONTEND (Next.js + pnpm)
   frontend:
-    build:
-      context: ./frontend
-    command: pnpm run dev
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules # Important: Don't let WSL sync node_modules
+    build: ./frontend
+    command: pnpm dev -H 0.0.0.0
+    # REMOVED: volumes: ./frontend:/app
+    # REMOVED: /app/node_modules
     ports:
       - "3000:3000"
     depends_on:
       - backend
+    env_file:
+      - ./frontend/.env.local
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:8000/api
+      - DJANGO_AUTH_LOGIN_URL=http://backend:8000/api/auth/login
+      - AUTH_URL=http://localhost:3000
+      - AUTH_TRUST_HOST=true
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend
+          target: /app
+          ignore:
+            - node_modules/
+            - .next/
 
 volumes:
   pgdata:
