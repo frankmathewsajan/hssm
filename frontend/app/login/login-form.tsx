@@ -1,130 +1,163 @@
 "use client"
 
+import { useEffect, useState, useTransition } from "react"
+import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Building2, LogIn } from "lucide-react"
-import { useActionState, useTransition } from "react"
-import { useForm, type SubmitHandler } from "react-hook-form"
+import { useRouter } from "next/navigation"
 
 import { loginAction, type LoginActionState } from "@/actions/auth"
-import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
 import { loginSchema, type LoginFormValues } from "@/lib/validations/auth"
 
-const initialState: LoginActionState = {
-  message: "",
-  fieldErrors: {},
-}
+import { Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { useActionState } from "react"
+
 
 export function LoginForm() {
-  const [isTransitionPending, startTransition] = useTransition()
-  const [state, formAction, isActionPending] = useActionState(
-    loginAction,
-    initialState
-  )
+  const [state, dispatch] = useActionState(loginAction, { message: "" })
+  const [isPending, startTransition] = useTransition()
+  const [showPassword, setShowPassword] = useState(false)
+  const router = useRouter()
+
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
-    defaultValues: {
-      username: "",
-      password: "",
-    },
-    mode: "onSubmit",
+    defaultValues: { username: "", password: "", remember_me: false },
   })
 
-  const isPending = isActionPending || isTransitionPending
-  const usernameError =
-    form.formState.errors.username?.message ?? state.fieldErrors?.username?.[0]
-  const passwordError =
-    form.formState.errors.password?.message ?? state.fieldErrors?.password?.[0]
-
-  const submitLogin: SubmitHandler<LoginFormValues> = (_values, event) => {
-    const formElement = event?.currentTarget
-
-    if (!(formElement instanceof HTMLFormElement)) {
-      return
-    }
-
+  const onSubmit = form.handleSubmit((values) => {
     startTransition(() => {
-      formAction(new FormData(formElement))
+      const formData = new FormData()
+      formData.set("username", values.username)
+      formData.set("password", values.password)
+      if (values.remember_me) formData.set("remember_me", "on") 
+      dispatch(formData)
     })
-  }
+  })
+
+  // Navigate to dashboard on successful login
+  useEffect(() => {
+    if ((state as LoginActionState)?.ok && !isPending) {
+      router.push("/dashboard")
+    }
+  }, [state, isPending, router])
 
   return (
-    <Card className="w-full max-w-[400px] rounded-lg border-0 bg-white/95 shadow-xl shadow-slate-200/70 ring-slate-900/10 backdrop-blur">
-      <CardHeader className="gap-3 px-6 pt-6">
-        <div className="flex size-10 items-center justify-center rounded-lg bg-emerald-950 text-white shadow-sm">
-          <Building2 className="size-5" aria-hidden="true" />
+    <Form {...form}>
+      <form onSubmit={onSubmit} className="flex flex-col gap-8" noValidate>
+        <div className="space-y-5">
+          <FormField
+            control={form.control}
+            name="username"
+            render={({ field }) => (
+              <FormItem className="space-y-2.5">
+                <FormLabel className="text-sm font-semibold text-slate-700 tracking-tight">Username</FormLabel>
+                <FormControl>
+                  <Input
+                    autoFocus
+                    autoComplete="username"
+                    placeholder="Enter your username"
+                    className="h-12 rounded-xl border-slate-200 bg-slate-50/50 px-4 text-base transition-all focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-slate-950/10 focus-visible:border-slate-950"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage className="text-xs font-medium" />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem className="space-y-2.5">
+                <FormLabel className="text-sm font-semibold text-slate-700 tracking-tight">Password</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      autoComplete="current-password"
+                      placeholder="••••••••••••"
+                      className="h-12 rounded-xl border-slate-200 bg-slate-50/50 px-4 pr-12 text-base transition-all focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-slate-950/10 focus-visible:border-slate-950"
+                      {...field}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900 transition-colors"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? <EyeOff className="size-5" /> : <Eye className="size-5" />}
+                    </button>
+                  </div>
+                </FormControl>
+                <FormMessage className="text-xs font-medium" />
+              </FormItem>
+            )}
+          />
         </div>
-        <div className="space-y-1">
-          <CardTitle className="text-xl font-semibold tracking-normal">
-            HSS Manager
-          </CardTitle>
-          <CardDescription>Sign in to continue to your dashboard.</CardDescription>
+
+        <div className="flex items-center justify-between">
+          <FormField
+            control={form.control}
+            name="remember_me"
+            render={({ field }) => (
+              <FormItem className="flex items-center space-y-0 gap-2.5">
+                <FormControl>
+                  <Checkbox
+                    id="remember"
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    className="h-5 w-5 rounded-md border-slate-300 text-slate-900 focus:ring-slate-900"
+                  />
+                </FormControl>
+                <label
+                  htmlFor="remember"
+                  className="text-sm font-semibold text-slate-600 cursor-pointer select-none tracking-tight"
+                >
+                  Remember Me
+                </label>
+              </FormItem>
+            )}
+          />
+          <a href="#" className="text-sm font-bold text-slate-900 hover:underline tracking-tight">
+            Forgot Password?
+          </a>
         </div>
-      </CardHeader>
-      <CardContent className="px-6 pb-6">
-        <form
-          action={formAction}
-          className="space-y-5"
-          noValidate
-          onSubmit={form.handleSubmit(submitLogin)}
-        >
-          <FieldGroup>
-            {state.message ? (
-              <div
-                role="alert"
-                className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
-              >
+
+        <div className="space-y-4">
+          {state?.message && (
+            <div className="rounded-xl bg-red-50 border border-red-100 p-4 animate-in fade-in slide-in-from-top-2 duration-300">
+              <p className="text-sm font-semibold text-red-600 tracking-tight">
                 {state.message}
-              </div>
-            ) : null}
+              </p>
+            </div>
+          )}
 
-            <Field data-invalid={Boolean(usernameError)}>
-              <FieldLabel htmlFor="username">Username</FieldLabel>
-              <Input
-                id="username"
-                autoComplete="username"
-                aria-invalid={Boolean(usernameError)}
-                placeholder="Enter your username"
-                disabled={isPending}
-                {...form.register("username")}
-              />
-              <FieldError>{usernameError}</FieldError>
-            </Field>
-
-            <Field data-invalid={Boolean(passwordError)}>
-              <FieldLabel htmlFor="password">Password</FieldLabel>
-              <Input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                aria-invalid={Boolean(passwordError)}
-                placeholder="Enter your password"
-                disabled={isPending}
-                {...form.register("password")}
-              />
-              <FieldError>{passwordError}</FieldError>
-            </Field>
-          </FieldGroup>
-
-          <Button type="submit" size="lg" className="w-full" disabled={isPending}>
-            <LogIn className="size-4" aria-hidden="true" />
-            {isPending ? "Signing in..." : "Sign in"}
+          <Button
+            type="submit"
+            className="h-14 w-full rounded-xl bg-slate-950 text-white hover:bg-slate-900 transition-all shadow-lg shadow-slate-200"
+            disabled={isPending}
+          >
+            <div className="flex items-center justify-center gap-2.5 font-bold text-base tracking-tight">
+              {isPending ? (
+                <>
+                  <Loader2 className="size-5 animate-spin" />
+                  <span>Verifying...</span>
+                </>
+              ) : (
+                <>
+                  <span>Sign in</span>
+                  <ArrowRight className="size-5" />
+                </>
+              )}
+            </div>
           </Button>
-        </form>
-      </CardContent>
-    </Card>
+        </div>
+      </form>
+    </Form>
   )
 }

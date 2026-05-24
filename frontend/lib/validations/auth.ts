@@ -10,6 +10,7 @@ export const loginSchema = z.object({
     .string()
     .min(1, "Password is required")
     .max(256, "Password must be 256 characters or fewer"),
+  remember_me: z.boolean().default(false).optional(),
 })
 
 export type LoginFormValues = z.infer<typeof loginSchema>

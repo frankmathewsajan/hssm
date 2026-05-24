@@ -1,61 +1,36 @@
 "use server"
 
-import { AuthError, CredentialsSignin } from "next-auth"
+import { signIn, signOut } from "@/config/auth"
+import { unstable_rethrow } from "next/navigation"
+import { AuthError } from "next-auth"
 
-import { signIn, signOut } from "@/auth"
-import { loginSchema, type LoginFormValues } from "@/lib/validations/auth"
+export type LoginActionState = { message?: string; ok?: boolean }
 
-export type LoginActionState = {
-  message?: string
-  fieldErrors?: Partial<Record<keyof LoginFormValues, string[]>>
-}
-
-export async function loginAction(
-  _previousState: LoginActionState,
-  formData: FormData
-): Promise<LoginActionState> {
-  const parsedCredentials = loginSchema.safeParse({
-    username: formData.get("username"),
-    password: formData.get("password"),
-  })
-
-  if (!parsedCredentials.success) {
-    return {
-      message: "Check the highlighted fields and try again.",
-      fieldErrors: parsedCredentials.error.flatten().fieldErrors,
-    }
-  }
-
+export async function loginAction(_: LoginActionState, formData: FormData): Promise<LoginActionState> {
   try {
-    await signIn("credentials", {
-      username: parsedCredentials.data.username,
-      password: parsedCredentials.data.password,
-      redirectTo: "/dashboard",
+    const result = await signIn("credentials", {
+      ...Object.fromEntries(formData.entries()),
+      redirect: false,
+      callbackUrl: "/dashboard",
     })
+    if (result?.error) {
+      return { message: result.error }
+    }
+    return { ok: true }
   } catch (error) {
-    if (error instanceof CredentialsSignin) {
-      return {
-        message:
-          error.code === "login_service_unavailable"
-            ? "Unable to reach the authentication service. Please try again."
-            : "Invalid username or password.",
-      }
-    }
-
+    // Preserve original error handling
     if (error instanceof AuthError) {
-      return {
-        message: "Unable to sign in right now. Please try again.",
+      switch (error.type) {
+        case "CredentialsSignin":
+          return { message: "Invalid username or password." }
+        default:
+          return { message: "Something went wrong." }
       }
     }
-
     throw error
   }
-
-  return {}
 }
 
 export async function logoutAction() {
-  await signOut({
-    redirectTo: "/login",
-  })
+  await signOut({ redirectTo: "/login" })
 }
