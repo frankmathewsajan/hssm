@@ -1,7 +1,6 @@
-// frontend/middleware.ts
 import { auth } from "@/config/auth"
 
-export default auth((req) => {
+export default auth(function proxy(req) {
   const isLoggedIn = !!req.auth
   const isLoginPage = req.nextUrl.pathname === "/"
 
@@ -10,7 +9,7 @@ export default auth((req) => {
     return Response.redirect(new URL("/dashboard", req.nextUrl))
   }
 
-  // 2. If NOT logged in and trying to access protected apps, kick them to /login
+  // 2. If NOT logged in and trying to access protected apps, kick them to /
   if (!isLoggedIn && !isLoginPage && req.nextUrl.pathname.startsWith("/dashboard")) {
     return Response.redirect(new URL("/", req.nextUrl))
   }

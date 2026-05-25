@@ -7,6 +7,8 @@ import { studentAdmissionSchema } from "@/lib/validations/student"
 
 export type StudentActionState = { success: boolean; message: string; errors?: Record<string, string[]> }
 
+type SchemaError = { loc?: unknown; msg?: string }
+
 export async function admitStudentAction(prevState: StudentActionState, formData: FormData): Promise<StudentActionState> {
   try {
     const session = await auth()
@@ -62,7 +64,7 @@ export async function admitStudentAction(prevState: StudentActionState, formData
     if (resp.ok) return { success: true, message: `Successfully admitted ${cleanPayload.name}.` }
 
     if (resp.status === 422 && Array.isArray(data.detail)) {
-      const detailedErrors = data.detail.map((err: any) => {
+      const detailedErrors = data.detail.map((err: SchemaError) => {
         const fieldKey = Array.isArray(err.loc) ? err.loc[err.loc.length - 1] : "Field"
         return `${fieldKey.toUpperCase()}: ${err.msg}`
       })

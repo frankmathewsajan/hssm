@@ -42,8 +42,7 @@ export function StudentDataTable({
   title = "Students",
   description = "Browse, search, and paginate the active roster.",
 }: DataTableProps) {
-  // local state for optimistic UI updates
-  const [rows, setRows] = React.useState<StudentRow[]>(data);
+  const rows = data;
   const [globalFilter, setGlobalFilter] = React.useState("");
 
   const table = useReactTable({
@@ -64,20 +63,6 @@ export function StudentDataTable({
     onGlobalFilterChange: setGlobalFilter,
   });
 
-  // optimistic UI callback from AdmissionDialog
-  const handleStudentAdded = React.useCallback((student: { name: string }) => {
-    console.log("[StudentDataTable] optimistic add", student.name);
-    const newRow: StudentRow = {
-      id: Date.now(), // temporary client‑side id
-      name: student.name,
-      ad_num: 0,
-      gender: { id: 0, name: "" },
-      class_now: { id: 0, name: "" },
-      // add any additional fields your columns expect with placeholders
-    } as any;
-    setRows((prev) => [newRow, ...prev]);
-  }, []);
-
   return (
     <div className="space-y-6">
       {/* Header with Add button */}
@@ -90,7 +75,7 @@ export function StudentDataTable({
             {description}
           </p>
         </div>
-        <AdmissionDialog onStudentAdded={handleStudentAdded} />
+        <AdmissionDialog />
       </div>
 
       {/* Search box */}

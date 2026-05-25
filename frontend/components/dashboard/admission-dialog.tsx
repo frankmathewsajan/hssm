@@ -19,11 +19,7 @@ import { LookupSelect } from "@/components/forms/lookup-select"
 
 const initialState: StudentActionState = { success: false, message: "" }
 
-interface AdmissionDialogProps {
-  onStudentAdded?: (student: { name: string }) => void
-}
-
-export function AdmissionDialog({ onStudentAdded }: AdmissionDialogProps) {
+export function AdmissionDialog() {
   const [open, setOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [state, dispatch] = useActionState(admitStudentAction, initialState)

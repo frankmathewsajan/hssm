@@ -1,7 +1,6 @@
 "use server"
 
 import { signIn, signOut } from "@/config/auth"
-import { unstable_rethrow } from "next/navigation"
 import { AuthError } from "next-auth"
 
 export type LoginActionState = { message?: string; ok?: boolean }

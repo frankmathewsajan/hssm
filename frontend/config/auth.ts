@@ -2,6 +2,13 @@
 import NextAuth, { CredentialsSignin } from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 
+type AuthUser = {
+  role?: string
+  school_code?: string
+  token?: string
+  refreshToken?: string
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     Credentials({
@@ -51,7 +58,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.role = user.role
         token.school_code = user.school_code
         token.token = user.token
-        token.refreshToken = (user as any).refreshToken
+        token.refreshToken = (user as AuthUser).refreshToken
       }
 
       // Token rotation logic
@@ -95,7 +102,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.school_code = token.school_code as string
         session.user.token = token.token as string
         if (token.error) {
-          (session as any).error = token.error
+          ;(session as { error?: string }).error = token.error as string
         }
       }
       return session
