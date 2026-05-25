@@ -102,6 +102,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }
   },
   pages: {
-    signIn: "/login",
+    signIn: "/", // Redirect to home page for sign in
   }
 })

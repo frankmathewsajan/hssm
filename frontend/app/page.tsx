@@ -1,65 +1,81 @@
-import Image from "next/image";
+import type { Metadata } from "next"
+import { LoginForm } from "@/app/login/login-form"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-export default function Home() {
+export const metadata: Metadata = {
+  title: "Login | HSS Manager",
+  description: "Sign in to your school workspace.",
+}
+
+const TRANSLATIONS = {
+  english: {
+    title: "The Art of Quiet Order",
+    content: [
+      "A school shouldn't be defined by the weight of its ledgers, but by the lightness of its leadership.",
+      "HSS Manager dissolves the friction of daily operations, weaving student records, staff payroll, and academic milestones into a single, intuitive flow.",
+      "Step away from the chaos of fragmented systems and embrace a workspace built for the future of education."
+    ]
+  },
+  malayalam: {
+    title: "അറിവിന്റെ വെളിച്ചം",
+    content: [
+      "ഒരു വിദ്യാലയത്തിന്റെ ശക്തി അതിന്റെ ഭാരമേറിയ കണക്കുപുസ്തകങ്ങളിലല്ല, മറിച്ച് സുതാര്യമായ തീരുമാനങ്ങളിലാണ്.",
+      "അഡ്മിഷൻ മുതൽ അക്കാദമിക് നേട്ടങ്ങൾ വരെ, ഓരോ വിദ്യാർത്ഥിയുടെയും വളർച്ചയെ അതിലളിതമായും കൃത്യമായും ഈ സംവിധാനം ഏകോപിപ്പിക്കുന്നു",
+      "ഫയലുകൾക്കിടയിലെ നൂലാമാലകൾ ഉപേക്ഷിക്കൂ; വിദ്യാലയ ഭരണരംഗത്തെ പുതിയൊരു പ്രഭാതത്തിലേക്ക് ചുവടുവയ്‌ക്കു."
+    ]
+  }
+}
+
+export default function LoginPage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans ">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white  sm:items-start">
-        <Image
-          className=""
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black ">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 ">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 "
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 "
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="flex h-screen w-screen overflow-hidden bg-white font-sans">
+      {/* Left Panel: Multilingual Content */}
+      <div className="hidden h-full w-1/2 flex-col justify-center bg-slate-50 px-16 lg:flex border-r border-slate-100">
+        <Tabs defaultValue="english" className="w-full max-w-2xl">
+          <TabsList className="mb-12 inline-flex h-10 items-center justify-center rounded-lg bg-slate-200/50 p-1 text-slate-500">
+            <TabsTrigger value="english" className="rounded-md px-6 py-1.5 text-sm font-semibold transition-all data-[state=active]:bg-white data-[state=active]:text-slate-950 data-[state=active]:shadow-sm">English</TabsTrigger>
+            <TabsTrigger value="malayalam" className="rounded-md px-6 py-1.5 text-sm font-semibold transition-all data-[state=active]:bg-white data-[state=active]:text-slate-950 data-[state=active]:shadow-sm">മലയാളം</TabsTrigger>
+          </TabsList>
+
+          {Object.entries(TRANSLATIONS).map(([key, data]) => (
+            <TabsContent key={key} value={key} className="space-y-8 animate-in fade-in slide-in-from-left-4 duration-500">
+              <h2 className="text-5xl font-bold tracking-tight text-slate-900 font-geist-sans leading-[1.1]">
+                {data.title}
+              </h2>
+              <div className="space-y-6">
+                {data.content.map((paragraph, index) => (
+                  <p key={index} className="text-xl text-slate-600 leading-relaxed font-medium">
+                    {paragraph}
+                  </p>
+                ))}
+              </div>
+            </TabsContent>
+          ))}
+        </Tabs>
+
+        <div className="mt-20 border-t border-slate-200 pt-8">
+          <div className="flex items-center gap-2 text-slate-400 font-semibold tracking-tight">
+            <span className="size-2 rounded-full bg-slate-900" />
+            <span>HSS MANAGER 2026</span>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838]  md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className=""
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04]   md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </div>
+
+      {/* Right Panel: Auth Form */}
+      <div className="flex h-full w-full flex-col justify-center px-4 sm:px-6 md:px-12 lg:w-1/2 lg:px-24 xl:px-32 bg-white">
+        <div className="mx-auto w-full max-w-md">
+          <div className="mb-12">
+            <h1 className="text-4xl font-bold tracking-tight text-slate-900 font-geist-sans">
+              Welcome Back
+            </h1>
+            <p className="mt-3 text-lg text-slate-500 font-medium">
+              Access your dashboard to manage school operations.
+            </p>
+          </div>
+
+          <LoginForm />
         </div>
-      </main>
+      </div>
     </div>
-  );
+  )
 }

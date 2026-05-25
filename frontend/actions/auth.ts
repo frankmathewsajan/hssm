@@ -32,5 +32,5 @@ export async function loginAction(_: LoginActionState, formData: FormData): Prom
 }
 
 export async function logoutAction() {
-  await signOut({ redirectTo: "/login" })
+  await signOut({ redirectTo: "/" })
 }

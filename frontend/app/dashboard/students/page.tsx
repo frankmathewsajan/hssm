@@ -28,7 +28,7 @@ export default async function StudentsPage() {
   const session = await auth()
 
   if (!session?.user?.token) {
-    redirect("/login")
+    redirect("/")
   }
 
   const students = await getStudents(session.user.token)
