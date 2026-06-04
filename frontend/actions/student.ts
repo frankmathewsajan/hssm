@@ -9,6 +9,9 @@ export type StudentActionState = { success: boolean; message: string; errors?: R
 
 type SchemaError = { loc?: unknown; msg?: string }
 
+// ----------------------------------------------------------------------
+// 1. STANDARD SINGLE ADMISSION
+// ----------------------------------------------------------------------
 export async function admitStudentAction(prevState: StudentActionState, formData: FormData): Promise<StudentActionState> {
   try {
     const session = await auth()
@@ -38,7 +41,7 @@ export async function admitStudentAction(prevState: StudentActionState, formData
       }
     }
 
-    // THE FIX: Map the UI strings directly to Django's native database keys and integers!
+    // Map the UI strings directly to Django's native database keys and integers
     const cleanPayload = {
       name: clientValidation.data.name,
       dob: clientValidation.data.dob,
@@ -76,5 +79,83 @@ export async function admitStudentAction(prevState: StudentActionState, formData
   } catch (error) {
     unstable_rethrow(error)
     return { success: false, message: "Communication error with backend services." }
+  }
+}
+
+// ----------------------------------------------------------------------
+// 2. HSCAP SMART ONBOARDING API CALLS
+// ----------------------------------------------------------------------
+
+export async function parseHscapPdf(formData: FormData) {
+  try {
+    const session = await auth()
+    const token = session?.user?.token
+    if (!token) throw new Error("Your active session has expired. Please log in again.")
+
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/students/onboard/parse`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        // Note: Do NOT set Content-Type here; browser sets multipart boundary automatically for FormData
+      },
+      body: formData,
+    })
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}))
+      throw new Error(error.detail || "Failed to parse PDF document.")
+    }
+
+    return await response.json()
+  } catch (error) {
+    unstable_rethrow(error)
+    throw error
+  }
+}
+
+export async function confirmHscapBatch(payload: any) {
+  try {
+    const session = await auth()
+    const token = session?.user?.token
+    if (!token) throw new Error("Your active session has expired. Please log in again.")
+
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/students/onboard/confirm`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    })
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}))
+      throw new Error(error.detail || "Failed to commit student batch to the database.")
+    }
+
+    return await response.json()
+  } catch (error) {
+    unstable_rethrow(error)
+    throw error
+  }
+}
+
+export async function getAdmissionLookups() {
+  try {
+    const session = await auth()
+    const token = session?.user?.token
+    if (!token) return null
+
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/students/meta/lookups`, {
+      headers: {
+        "Authorization": `Bearer ${token}`,
+      }
+    })
+    
+    if (!response.ok) return null
+    return await response.json()
+  } catch (error) {
+    unstable_rethrow(error)
+    return null
   }
 }
