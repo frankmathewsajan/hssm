@@ -159,3 +159,54 @@ export async function getAdmissionLookups() {
     return null
   }
 }
+
+
+export async function getStagedCandidates() {
+  try {
+    const session = await auth()
+    const token = session?.user?.token
+    if (!token) return []
+
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/students/staging-queue`, {
+      headers: { "Authorization": `Bearer ${token}` },
+      cache: 'no-store' // Ensure we always get fresh queue data
+    })
+    
+    if (!response.ok) return []
+    return await response.json()
+  } catch (error) {
+    unstable_rethrow(error)
+    return []
+  }
+}
+
+export async function admitStagedCandidate(candidateId: number, classId: number, isPermanent: boolean) {
+  try {
+    const session = await auth()
+    const token = session?.user?.token
+    if (!token) throw new Error("Session expired.")
+
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/students/admit-candidate/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+      body: JSON.stringify({ 
+        candidate_id: candidateId, 
+        class_id: classId, 
+        is_permanent: isPermanent 
+      }),
+    })
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}))
+      throw new Error(error.detail || "Admission failed.")
+    }
+
+    return await response.json()
+  } catch (error) {
+    unstable_rethrow(error)
+    throw error
+  }
+}
