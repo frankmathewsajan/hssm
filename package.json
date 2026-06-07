@@ -1,0 +1,8 @@
+{
+	"devDependencies": {
+		"concurrently": "^10.0.3"
+	},
+	"scripts": {
+    "dev": "docker compose up -d && concurrently -n frontend,backend \"cd frontend && pnpm run dev\" \"cd backend && uv run manage.py runserver\""
+  }
+}

@@ -19,11 +19,11 @@ export default async function DashboardPage() {
       <Card className="border-border/60 bg-card/80 shadow-sm backdrop-blur">
         <CardHeader>
           <CardTitle className="text-2xl">Dashboard</CardTitle>
-          <CardDescription>Quick access to the student roster.</CardDescription>
+          <CardDescription>Quick access to the student list.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-3">
           <Button asChild>
-            <Link href="/dashboard/students">Open Student Roster</Link>
+            <Link href="/dashboard/students">Open Student List</Link>
           </Button>
         </CardContent>
       </Card>

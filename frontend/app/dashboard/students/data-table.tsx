@@ -27,7 +27,6 @@ import {
 } from "@/components/ui/table";
 
 import { studentColumns, type StudentRow } from "./columns";
-import { AdmissionDialog } from "@/components/dashboard/admission-dialog";
 
 type DataTableProps = {
   data: StudentRow[];
@@ -40,7 +39,7 @@ export function StudentDataTable({
   data,
   columns = studentColumns,
   title = "Students",
-  description = "Browse, search, and paginate the active roster.",
+  description = "Browse, search, and paginate the active list.",
 }: DataTableProps) {
   const rows = data;
   const [globalFilter, setGlobalFilter] = React.useState("");
@@ -75,7 +74,6 @@ export function StudentDataTable({
             {description}
           </p>
         </div>
-        <AdmissionDialog />
       </div>
 
       {/* Search box */}

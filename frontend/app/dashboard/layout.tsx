@@ -1,7 +1,8 @@
+// frontend/app/dashboard/layout.tsx
 import { redirect } from "next/navigation"
 
 import { auth } from "@/config/auth"
-import { DashboardShell } from "./dashboard-shell"
+import { DashboardShell } from "../../components/dashboard/dashboard-shell"
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await auth()

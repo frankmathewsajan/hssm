@@ -8,7 +8,7 @@ import type { StudentRow } from "./columns"
 
 export const metadata: Metadata = {
   title: "Students | HSS Manager",
-  description: "Student roster.",
+  description: "Student list.",
 }
 
 async function getStudents(token: string): Promise<StudentRow[]> {

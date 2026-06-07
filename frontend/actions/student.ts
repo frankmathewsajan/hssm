@@ -180,7 +180,7 @@ export async function getStagedCandidates() {
   }
 }
 
-export async function admitStagedCandidate(candidateId: number, classId: number, isPermanent: boolean) {
+export async function admitStagedCandidate(candidateId: number, isPermanent: boolean) {
   try {
     const session = await auth()
     const token = session?.user?.token
@@ -193,8 +193,7 @@ export async function admitStagedCandidate(candidateId: number, classId: number,
         "Authorization": `Bearer ${token}`,
       },
       body: JSON.stringify({ 
-        candidate_id: candidateId, 
-        class_id: classId, 
+        candidate_id: candidateId,
         is_permanent: isPermanent 
       }),
     })

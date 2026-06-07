@@ -2,3 +2,4 @@ legacy
 .venv/
 inspect_csv.py
 csv_summary.txt
+node_modules
