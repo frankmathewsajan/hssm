@@ -146,7 +146,7 @@ export async function getAdmissionLookups() {
     const token = session?.user?.token
     if (!token) return null
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/students/meta/lookups`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/core/lookups`, {
       headers: {
         "Authorization": `Bearer ${token}`,
       }
@@ -167,7 +167,7 @@ export async function getStagedCandidates() {
     const token = session?.user?.token
     if (!token) return []
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/students/staging-queue`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/students/onboard/staging-queue`, {
       headers: { "Authorization": `Bearer ${token}` },
       cache: 'no-store' // Ensure we always get fresh queue data
     })

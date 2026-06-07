@@ -2,21 +2,19 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Search, UserCheck, Clock } from "lucide-react"
+import { Search, UserPlus, Banknote, Calendar, GraduationCap } from "lucide-react"
 
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import { getStagedCandidates } from "@/actions/student"
 import { AdmissionDialog } from "@/components/features/admissions/admission-dialog"
 
 export default function StagingQueuePage() {
   const [candidates, setCandidates] = useState<any[]>([])
   const [searchTerm, setSearchTerm] = useState("")
-  
-  // Dialog visibility state
   const [selectedCandidate, setSelectedCandidate] = useState<any>(null)
-  const [isPermanent, setIsPermanent] = useState(true)
 
   useEffect(() => {
     loadData()
@@ -25,11 +23,6 @@ export default function StagingQueuePage() {
   const loadData = async () => {
     const queueData = await getStagedCandidates()
     setCandidates(queueData || [])
-  }
-
-  const openDialog = (candidate: any, perm: boolean) => {
-    setSelectedCandidate(candidate)
-    setIsPermanent(perm)
   }
 
   const filteredCandidates = candidates.filter(c => 
@@ -63,49 +56,63 @@ export default function StagingQueuePage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {filteredCandidates.map((candidate) => (
-            <Card key={candidate.id} className="relative flex flex-col hover:border-primary/50 transition-colors">
-              <div className="absolute top-0 left-0 w-1 h-full bg-primary/50"></div>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg">{candidate.name}</CardTitle>
-                <p className="text-sm font-mono text-muted-foreground mt-1">App: {candidate.app_num}</p>
-              </CardHeader>
-              
-              <CardContent className="space-y-4 flex-grow flex flex-col justify-end">
-                <div className="grid grid-cols-2 gap-2 text-sm bg-muted/20 p-3 rounded-md">
-                  <div><span className="text-muted-foreground">10th Reg:</span> {candidate.reg_num}</div>
-                  <div><span className="text-muted-foreground">Gender:</span> {candidate.gender_text}</div>
-                </div>
+          {filteredCandidates.map((candidate) => {
+            // Determine subtle border color based on gender (inverted mapping, light shades)
+            const isFemale = candidate.gender_text?.toLowerCase().includes("f")
+            const stripeColor = isFemale ? "bg-blue-300/80" : "bg-rose-300/80"
 
-                <div className="flex gap-2 pt-2 border-t">
-                  <Button 
-                    className="w-full bg-green-600 hover:bg-green-700 text-white" 
-                    size="sm"
-                    onClick={() => openDialog(candidate, true)}
-                  >
-                    Admit
-                    <UserCheck className="ml-2 h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="w-full" 
-                    size="sm"
-                    onClick={() => openDialog(candidate, false)}
-                  >
-                    Temp Admit
-                    <Clock className="ml-2 h-4 w-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+            return (
+              <Card key={candidate.id} className="relative flex flex-col hover:border-primary/50 transition-colors overflow-hidden">
+                {/* Ultra-thin, subtle Gender Border */}
+                <div className={`absolute top-0 left-0 w-[2px] h-full ${stripeColor}`}></div>
+                
+                <CardHeader className="pb-2 pt-4 pl-5">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle className="text-lg">{candidate.name}</CardTitle>
+                      <p className="text-xs font-mono text-muted-foreground mt-0.5">App No: {candidate.app_num}</p>
+                    </div>
+                    {/* Mild indicator that state token fee is paid */}
+                    <Badge variant="secondary" className="bg-green-500/10 text-green-700 hover:bg-green-500/20 border-0">
+                      <Banknote className="w-3 h-3 mr-1" />
+                      Paid
+                    </Badge>
+                  </div>
+                </CardHeader>
+                
+                <CardContent className="space-y-4 flex-grow flex flex-col justify-end pl-5">
+                  {/* Richer Information Grid */}
+                  <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-sm mt-2">
+                    <div className="flex items-center text-muted-foreground">
+                      <GraduationCap className="w-3.5 h-3.5 mr-1.5" />
+                      <span>10th Reg: <span className="text-foreground font-medium">{candidate.reg_num}</span></span>
+                    </div>
+                    <div className="flex items-center text-muted-foreground">
+                      <Calendar className="w-3.5 h-3.5 mr-1.5" />
+                      <span>DOB: <span className="text-foreground font-medium">{candidate.dob || "N/A"}</span></span>
+                    </div>
+                  </div>
+
+                  <div className="pt-3 border-t mt-2">
+                    <Button 
+                      variant="outline"
+                      className="w-full bg-background" 
+                      onClick={() => setSelectedCandidate(candidate)}
+                    >
+                      Process Admission
+                      <UserPlus className="ml-2 h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )
+          })}
         </div>
       )}
 
       {/* Abstracted Complex Dialog */}
       <AdmissionDialog 
         candidate={selectedCandidate}
-        isPermanent={isPermanent}
         onClose={() => setSelectedCandidate(null)}
         onSuccess={loadData}
       />
