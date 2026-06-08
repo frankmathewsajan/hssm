@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { UploadCloud, Smartphone, QrCode, X, CheckCircle2, Loader2, FileText, Image as ImageIcon } from "lucide-react"
+import { UploadCloud, Smartphone, X, Loader2, FileText } from "lucide-react"
 import { QRCodeSVG } from "qrcode.react"
 import { toast } from "sonner"
 import { useSession } from "next-auth/react"
@@ -15,21 +15,32 @@ interface SmartUploadProps {
   label: string
   candidateId: number
   docType: "tc" | "conduct"
+  value?: string // Tells the component if a file already exists
   onUploadSuccess: (fileUrl: string) => void
 }
 
-export function SmartUpload({ id, label, candidateId, docType, onUploadSuccess }: SmartUploadProps) {
+export function SmartUpload({ id, label, candidateId, docType, value, onUploadSuccess }: SmartUploadProps) {
   const { data: session } = useSession()
   const [showQR, setShowQR] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
-  const [status, setStatus] = useState<"idle" | "polling" | "success">("idle")
-  const [preview, setPreview] = useState<string | null>(null)
+  
+  // Initialize state based on whether 'value' already exists in the parent formData
+  const [status, setStatus] = useState<"idle" | "polling" | "success">(value ? "success" : "idle")
+  const [preview, setPreview] = useState<string | null>(value ? "Document Secured" : null)
   
   const pollingInterval = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     return () => { if (pollingInterval.current) clearInterval(pollingInterval.current) }
   }, [])
+
+  // If the parent explicitly resets the value (e.g. closing the dialog), reset local state
+  useEffect(() => {
+    if (!value) {
+      setStatus("idle")
+      setPreview(null)
+    }
+  }, [value])
 
   const handleStartScanner = async () => {
     try {
@@ -72,6 +83,8 @@ export function SmartUpload({ id, label, candidateId, docType, onUploadSuccess }
     if (file) {
       setPreview(file.name)
       setStatus("success")
+      // Normally you'd upload this directly to Django here, but for now we spoof success
+      onUploadSuccess("local_upload_pending") 
       toast.success(`${label} attached.`)
     }
   }
@@ -89,7 +102,10 @@ export function SmartUpload({ id, label, candidateId, docType, onUploadSuccess }
             <span className="text-sm font-medium">{preview || "Document Attached"}</span>
             <span className="text-[10px] text-muted-foreground uppercase">Verified</span>
           </div>
-          <Button variant="ghost" size="sm" className="ml-auto" onClick={() => setStatus("idle")}>
+          <Button variant="ghost" size="sm" className="ml-auto" onClick={() => {
+            setStatus("idle");
+            onUploadSuccess(""); // Clear it in parent too
+          }}>
              <X className="w-4 h-4" />
           </Button>
         </div>

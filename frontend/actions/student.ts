@@ -186,7 +186,7 @@ export async function admitStagedCandidate(candidateId: number, isPermanent: boo
     const token = session?.user?.token
     if (!token) throw new Error("Session expired.")
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/students/admit-candidate/`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/students/onboard/admit-physical/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 }
 
 async function getStudents(token: string): Promise<StudentRow[]> {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/students/`, {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/students/roster/`, {
     headers: { Authorization: `Bearer ${token}` },
     cache: "no-store",
   })

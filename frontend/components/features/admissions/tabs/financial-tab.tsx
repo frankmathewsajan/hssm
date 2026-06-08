@@ -3,22 +3,21 @@
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
-interface FinancialTabProps {
-  candidate: any
-  admissionType: string
-  setAdmissionType: (value: string) => void
-}
+export function FinancialTab({ formData, setFormData, lookups }: any) {
+  const currentAdmissionType = formData?.admission_type || "permanent"
+  const currentQuotaId = formData?.quota_id || ""
 
-export function FinancialTab({ candidate, admissionType, setAdmissionType }: FinancialTabProps) {
   return (
-    <div className="p-6 border-2 rounded-xl bg-amber-500/5 border-amber-500/30 mb-4">
+    <div className="p-5 border border-slate-200 rounded-xl bg-slate-50/50 mb-4 animate-in fade-in duration-150">
       <div className="grid gap-6 md:grid-cols-2">
+        
         <div className="grid gap-2">
-          <Label className="text-amber-900 font-semibold text-base">
-            Admission Status <span className="text-red-500">*</span>
-          </Label>
-          <Select value={admissionType} onValueChange={setAdmissionType}>
-            <SelectTrigger className="border-amber-500/40 h-12">
+          <Label className="text-slate-900 font-bold text-sm">Admission Status <span className="text-red-500">*</span></Label>
+          <Select 
+            value={currentAdmissionType} 
+            onValueChange={(val) => setFormData((prev: any) => ({ ...prev, admission_type: val }))}
+          >
+            <SelectTrigger className="h-11 border-slate-200 bg-white">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -27,21 +26,26 @@ export function FinancialTab({ candidate, admissionType, setAdmissionType }: Fin
             </SelectContent>
           </Select>
         </div>
+
         <div className="grid gap-2">
-          <Label className="text-amber-900 font-semibold text-base">
-            Fee Category <span className="text-red-500">*</span>
-          </Label>
-          <Select defaultValue="general">
-            <SelectTrigger className="border-amber-500/40 h-12">
-              <SelectValue />
+          <Label className="text-slate-900 font-bold text-sm">Allotted Quota / Fee Category <span className="text-red-500">*</span></Label>
+          <Select 
+            value={currentQuotaId} 
+            onValueChange={(val) => setFormData((prev: any) => ({ ...prev, quota_id: val }))}
+          >
+            <SelectTrigger className="h-11 border-slate-200 bg-white">
+              <SelectValue placeholder="Select Allocation Quota" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="general">General Category (Full PTA Fee)</SelectItem>
-              <SelectItem value="sc_st">SC/ST (Full Exemption)</SelectItem>
-              <SelectItem value="oec">OEC (Full Exemption)</SelectItem>
+              {lookups?.quotas?.map((quota: any) => (
+                <SelectItem key={quota.id} value={quota.id.toString()}>
+                  {quota.name}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
+
       </div>
     </div>
   )
